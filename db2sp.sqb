@@ -8,7 +8,7 @@
 
          exec sql include sqlca end-exec.
 
-      *> -------------------------------------------
+      *> ------------------------------------------- *
       *> COBOL HOST VARIABLES FOR TABLE EMPLOYEE
       *> -------------------------------------------
          EXEC SQL BEGIN DECLARE SECTION END-EXEC.
