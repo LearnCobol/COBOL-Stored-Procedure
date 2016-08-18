@@ -1,0 +1,104 @@
+       program-id. db2sp.
+
+       environment division.
+       configuration section.
+
+       data division.
+       working-storage section.
+
+         exec sql include sqlca end-exec.
+
+      *> -------------------------------------------
+      *> COBOL HOST VARIABLES FOR TABLE EMPLOYEE
+      *> -------------------------------------------
+         EXEC SQL BEGIN DECLARE SECTION END-EXEC.
+       01  DCLEMPLOYEE.
+           03 EMPLOYEE-EMPNO                  PIC X(6).
+           03 EMPLOYEE-FIRSTNME               PIC X(12).
+           03 EMPLOYEE-MIDINIT                PIC X(1).
+           03 EMPLOYEE-LASTNAME               PIC X(15).
+           03 EMPLOYEE-WORKDEPT               PIC X(3).
+           03 EMPLOYEE-PHONENO                PIC X(4).
+           03 EMPLOYEE-HIREDATE               PIC X(10).
+           03 EMPLOYEE-JOB                    PIC X(8).
+           03 EMPLOYEE-EDLEVEL                PIC S9(04)  COMP-5.
+           03 EMPLOYEE-SEX                    PIC X(1).
+           03 EMPLOYEE-BIRTHDATE              PIC X(10).
+           03 EMPLOYEE-SALARY                 PIC S9(7)V9(2)  COMP-3.
+           03 EMPLOYEE-BONUS                  PIC S9(7)V9(2)  COMP-3.
+           03 EMPLOYEE-COMM                   PIC S9(7)V9(2)  COMP-3.
+
+       01  DCLEMPLOYEE-NULL.
+           03 EMPLOYEE-MIDINIT-NULL           PIC S9(04)  COMP-5.
+           03 EMPLOYEE-WORKDEPT-NULL          PIC S9(04)  COMP-5.
+           03 EMPLOYEE-PHONENO-NULL           PIC S9(04)  COMP-5.
+           03 EMPLOYEE-HIREDATE-NULL          PIC S9(04)  COMP-5.
+           03 EMPLOYEE-JOB-NULL               PIC S9(04)  COMP-5.
+           03 EMPLOYEE-SEX-NULL               PIC S9(04)  COMP-5.
+           03 EMPLOYEE-BIRTHDATE-NULL         PIC S9(04)  COMP-5.
+           03 EMPLOYEE-SALARY-NULL            PIC S9(04)  COMP-5.
+           03 EMPLOYEE-BONUS-NULL             PIC S9(04)  COMP-5.
+           03 EMPLOYEE-COMM-NULL              PIC S9(04)  COMP-5.     
+       EXEC SQL END DECLARE SECTION END-EXEC.
+
+       linkage section.
+       01  LS-EMPNO           PIC X(6).
+       *>  Under Windows INT and SMALL parameters must be
+       *>  defined as COMP-5 variables since getting data
+       *>  from DB2 LUW
+       01  LS-SQLCD           PIC S9(9) COMP-5.
+       01  LS-FIRST           PIC X(12).
+       01  LS-LAST            PIC X(15).
+       01  LS-HIRE            PIC X(10).
+       01  LS-SALARY          PIC S9(7)V99 COMP-3.
+
+       procedure division using ls-empno,
+                                ls-sqlcd,
+                                ls-first,
+                                ls-last,
+                                ls-hire,
+                                ls-salary.
+
+           move ls-empno     to   employee-empno
+           move spaces       to   ls-first ls-last ls-hire
+           move 0            to   ls-salary
+
+           EXEC SQL 
+            SELECT 
+                   A.FIRSTNME
+                  ,A.LASTNAME
+                  ,A.HIREDATE
+                  ,A.SALARY
+            INTO 
+                   :EMPLOYEE-FIRSTNME
+                  ,:EMPLOYEE-LASTNAME
+                  ,:EMPLOYEE-HIREDATE:EMPLOYEE-HIREDATE-NULL
+                  ,:EMPLOYEE-SALARY:EMPLOYEE-SALARY-NULL
+              FROM EMPLOYEE A
+             WHERE (A.EMPNO = :EMPLOYEE-EMPNO)
+           END-EXEC 
+
+           move sqlcode                to   ls-sqlcd
+           if sqlcode = 0
+              move employee-firstnme   to   ls-first
+              move employee-lastname   to   ls-last
+              move employee-hiredate   to   ls-hire
+              move employee-salary     to   ls-salary
+           end-if 
+
+           move "LEE" to  employee-firstnme 
+
+           EXEC SQL
+            declare csr1 cursor for
+            SELECT 
+                   A.FIRSTNME
+                  ,A.LASTNAME
+                  ,A.HIREDATE
+                  ,A.SALARY
+              FROM EMPLOYEE A
+           END-EXEC 
+
+          exec sql open csr1 end-exec          
+          goback.
+
+       end program db2sp.
